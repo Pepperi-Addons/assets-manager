@@ -5,7 +5,7 @@ export async function assets(client: Client, request: Request) {
     const service = new AssetsService(client);
 
     if (request.method == 'POST') {
-        return service.upsert(request.body);
+        return service.upsert(request);
     }
     else if (request.method == 'GET') {
         return await service.find(request.query);
