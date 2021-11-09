@@ -3,6 +3,7 @@ import { Client, Request } from '@pepperi-addons/debug-server';
 import config from '../addon.config.json';
 import { AssetsScheme } from './metadata';
 import { Validator } from './validator';
+import { FileUploader } from './FileUploader';
 var mime = require('mime-types');
 
 class AssetsService {
@@ -40,45 +41,47 @@ class AssetsService {
         
         // See: https://github.com/Pepperi-Addons/charts-manager/blob/Hadar-Branch/server-side/chart-service.ts
         // Upload file from URL or from URI
-        const assetFile = await this.upsertAssetFile(body);
+        //const assetFile = await this.upsertAssetFile(body);
+        const uploadedFileURL = await (new FileUploader()).uploadToAWS(body.Key, body.URI, body.Mime);
 
         // TODO: FileID and URL?
-        body.FileStorageID = assetFile.InternalID;
-        body.URL = assetFile.URL;
+        //body.FileStorageID = assetFile.InternalID;
+        body.URL = uploadedFileURL;
 
-        return this.papiClient.addons.data.uuid(config.AddonUUID).table(AssetsScheme.Name).upsert(body);
+        //return this.papiClient.addons.data.uuid(config.AddonUUID).table(AssetsScheme.Name).upsert(body);
+        return false;
     }
 
-    private async upsertAssetFile(body) {
+    // private async upsertAssetFile(body) {
 
-        try {
-            // TODO: IsSync: false?
-            const fileStorage: FileStorage = {
-                FileName: body.Name,
-                Title: body.Name,
-                IsSync: false
-            }
+    //     try {
+    //         // TODO: IsSync: false?
+    //         const fileStorage: FileStorage = {
+    //             FileName: body.Name,
+    //             Title: body.Name,
+    //             IsSync: false
+    //         }
             
-            // TODO: What is FileID???
-            fileStorage.InternalID = body.FileID;
+    //         // TODO: What is FileID???
+    //         fileStorage.InternalID = body.FileID;
             
-            if (body.Hidden) {
-                fileStorage.Hidden = true;
-            }
-            else {
-                if (this.isValidURL(body.URI)) {
-                    fileStorage.URL = body.URI
-                }
-                else {
-                    fileStorage.Content = body.URI;
-                }
-            }     
-            return await this.papiClient.fileStorage.upsert(fileStorage)
-        }
-        catch (e) {
-            throw new Error(`Failed to upsert file storage. Error: ${e}`);
-        }
-    }
+    //         if (body.Hidden) {
+    //             fileStorage.Hidden = true;
+    //         }
+    //         else {
+    //             if (this.isValidURL(body.URI)) {
+    //                 fileStorage.URL = body.URI
+    //             }
+    //             else {
+    //                 fileStorage.Content = body.URI;
+    //             }
+    //         }     
+    //         return await this.papiClient.fileStorage.upsert(fileStorage)
+    //     }
+    //     catch (e) {
+    //         throw new Error(`Failed to upsert file storage. Error: ${e}`);
+    //     }
+    // }
 
     private isValidURL(s): boolean {
         let url: URL;
